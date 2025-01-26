@@ -418,10 +418,11 @@ function generateReport(results) {
                             }]
                         },
                         options: {
-                            scales: {
-                                y: {
-                                    ticks: {
-                                        stepSize: 1,
+                            scales:{
+                                y:{
+                                    display: false, // Hide the y-axis ticks and labels
+                                        ticks:{
+                                        stepSize:1,
                                     }
                                 }
                             }
