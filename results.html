@@ -200,13 +200,22 @@
 
     // Load data from Baserow
     async function loadBaserowData() {
-        const url = `https://api.baserow.io/api/database/rows/table/${BASEROW_TABLE_ID}/?user_field_names=true`;
-        const response = await axios.get(url, {
-            headers: {
-                Authorization: `Token ${BASEROW_API_TOKEN}`
-            }
-        });
-        return response.data.results;
+    const functionUrl = 'https://faas-ams3-2a2df116.doserverless.co/api/v1/web/fn-de36936e-caf8-41eb-8caf-a697942675cd/default/ai-survey-results'; // Vervang dit door de URL van jouw serverless function
+
+    try {
+        const response = await axios.get(functionUrl);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to fetch data from serverless function. Status: ${response.status}`);
+        }
+
+        //Assuming that the function returns an object with a 'data' field containing the results:
+        return response.data.results; // or response.data as needed
+
+    } catch (error) {
+        console.error("Error loading data:", error);
+        return []; // Return an empty array or handle the error as needed
+    }
     }
 
     // Render a chart for a single question
