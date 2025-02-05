@@ -1,10 +1,6 @@
 const surveyContainer = document.getElementById('survey-container');
 const surveyForm = document.getElementById('surveyForm');
 const resultsDiv = document.getElementById('results');
-const BASEROW_API_TOKEN = ''; // Replace with your actual token
-const BASEROW_DATABASE_ID = ''; // Replace with your actual database ID
-const BASEROW_TABLE_ID = ''; // Replace with your actual table ID
-
 
 const surveyQuestions = [
     {
@@ -302,14 +298,12 @@ surveyForm.addEventListener('submit', async function(event) {
        }
       }
     try {
-        const response = await fetch(`https://api.baserow.io/api/database/rows/table/${BASEROW_TABLE_ID}/?user_field_names=true`, {
+        const response = await fetch('https://faas-ams3-2a2df116.doserverless.co/api/v1/web/fn-de36936e-caf8-41eb-8caf-a697942675cd/default/ai-survey', {
             method: 'POST',
-            headers: {
-                'Authorization': `Token ${BASEROW_API_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(baserowData)
-        });
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ baserowData })
+          });
+          
        if (!response.ok) {
          throw new Error(`HTTP error! Status: ${response.status}`);
        }
