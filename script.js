@@ -1,9 +1,9 @@
 const surveyContainer = document.getElementById('survey-container');
 const surveyForm = document.getElementById('surveyForm');
 const resultsDiv = document.getElementById('results');
-const BASEROW_API_TOKEN = 'RrrbVJVAMyvpPwuOFL5s78uyq6avzjn9'; // Replace with your actual token
-const BASEROW_DATABASE_ID = '176815'; // Replace with your actual database ID
-const BASEROW_TABLE_ID = '434056'; // Replace with your actual table ID
+const BASEROW_API_TOKEN = ''; // Replace with your actual token
+const BASEROW_DATABASE_ID = ''; // Replace with your actual database ID
+const BASEROW_TABLE_ID = ''; // Replace with your actual table ID
 
 
 const surveyQuestions = [
