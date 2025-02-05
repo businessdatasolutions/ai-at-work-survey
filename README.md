@@ -1,77 +1,68 @@
 # AI Survey App
 
-De **AI Survey App** is een webapplicatie die gebruikers in staat stelt om een enquête over de impact van AI op hun werkervaring in te vullen. De applicatie verzamelt reacties op verschillende vragen – zowel via meerkeuze (Likert-schaal) als open tekst – en verwerkt deze resultaten door ze weer te geven in een overzichtelijk rapport. Daarnaast wordt de ingevulde data via een DigitalOcean Serverless Function doorgestuurd naar een database (bijvoorbeeld Baserow) voor verdere opslag en analyse.
+De **AI Survey App** bestaat uit twee hoofdonderdelen:
+
+1. **Enquêteformulier** – Gebruikers vullen een dynamisch gegenereerd formulier in, waarbij meningen en open reacties worden vastgelegd. Na inzending wordt de data via een DigitalOcean Serverless Function doorgestuurd naar een database (bijvoorbeeld Baserow).
+
+2. **Resultaten Overzicht** – Een aparte module haalt de opgeslagen resultaten uit de database op via een (tweede) DigitalOcean Serverless Function en bouwt daarmee een visueel overzicht, waarbij de data onder andere wordt gepresenteerd in grafieken en tekstuele samenvattingen.
 
 ## Functionaliteit
 
-- **Enquêteformulier:** De applicatie toont een set van gestructureerde vragen, ingedeeld in secties zoals *Productivity Changes*, *Skill Changes*, *Job Role Changes*, en meer.
-- **Interactie en feedback:** Gebruikers kunnen hun mening geven door middel van radio buttons (Likert-schaal) en tekstvelden voor toelichtingen.
-- **Data verwerking:** Na het invullen van de enquête worden de resultaten verzameld en geordend. Voor de Likert-vragen worden de scores geteld en visueel weergegeven middels grafieken (bar charts) met behulp van Chart.js.
-- **Serverless integratie:** De verzamelde data wordt via een POST-request verstuurd naar een DigitalOcean Serverless Function, die vervolgens de gegevens doorstuurt naar een externe database.
+### Enquêteformulier
 
-## Gebruik
+- **Dynamische vragen:** De vragen worden opgedeeld in verschillende secties (zoals *Productivity Changes*, *Skill Changes*, enzovoort) en worden gegenereerd vanuit een JavaScript-array.
+- **Input Types:** Ondersteuning voor zowel Likert-schaal (via radio buttons) als open tekstvelden.
+- **Interactieve styling:** Bij selectie verandert de stijl van de labels om de gekozen optie visueel te benadrukken.
+- **Data Verwerking:** Na het indienen worden de antwoorden verzameld en gestructureerd. De antwoorden worden vervolgens in een object (met de bijbehorende identificatoren) verwerkt.
 
-1. **Enquête invullen:**  
-   Open de applicatie in een moderne webbrowser, vul het formulier in en klik op "Submit". De resultaten worden direct verwerkt en weergegeven in een rapportage sectie op de pagina.
+### Data Verzamelen via Serverless Function
 
-2. **Resultaten bekijken:**  
-   Na inzending verschijnt een overzicht met de samengevatte resultaten. Likert-vragen worden getoond als staafdiagrammen, terwijl open tekst reacties apart worden weergegeven.
+- **Serverless Integratie:** Na het verzamelen van de antwoorden wordt de data via een POST-request verstuurd naar een DigitalOcean Serverless Function.
+- **Database Connectie:** De serverless functie ontvangt de data en stuurt deze door naar een externe database (bijvoorbeeld Baserow) voor opslag.
+- **Omgevingsvariabelen:** Gevoelige informatie zoals API-tokens wordt beheerd via omgevingsvariabelen.
 
-3. **Data opslag:**  
-   De ingevulde data wordt automatisch doorgestuurd naar een serverless functie via DigitalOcean. Deze functie verwerkt de data en verstuurt deze naar een database (bijv. Baserow), zodat je de resultaten later kunt analyseren of verwerken.
+### Resultaten Overzicht
+
+- **Data Ophalen:** Een aparte module in de applicatie roept een andere DigitalOcean Serverless Function aan om de eerder opgeslagen resultaten uit de database op te halen.
+- **Visualisatie:** De opgehaalde resultaten worden gebruikt om een overzichtelijke rapportage te bouwen. Hierbij worden onder andere bar charts (met Chart.js) getoond voor de Likert-vragen en open tekstreacties apart weergegeven.
+- **Realtime Weergave:** De gebruikers kunnen direct het overzicht van de resultaten zien na het ophalen van de data, wat een snelle feedback op de ingevulde enquête mogelijk maakt.
 
 ## Technische Details
 
-- **Frontend:**
-  - **HTML/CSS/JavaScript:** De gebruikersinterface is opgebouwd met standaard webtechnologieën.
-  - **Dynamische formulier generatie:** De enquêtevragen worden dynamisch gegenereerd vanuit een JavaScript-array, waarbij voor elk type vraag (Likert of open text) een bijpassend input-element wordt gecreëerd.
-  - **Chart.js:** Voor de visualisatie van de Likert-vragen wordt Chart.js gebruikt om de verzamelde scores als bar charts weer te geven.
+- **Frontend Technologieën:**
+  - **HTML, CSS en JavaScript:** De gebruikersinterface is opgebouwd met standaard webtechnologieën.
+  - **Dynamische DOM Manipulatie:** De enquêtevragen en de rapportage worden dynamisch in de browser opgebouwd.
+  - **Chart.js:** Voor het genereren van grafieken wordt Chart.js ingezet, wat zorgt voor een visuele representatie van de Likert-antwoordstatistieken.
 
-- **Serverless Function:**
-  - **DigitalOcean Serverless:** De applicatie maakt gebruik van een serverless functie, die wordt aangeroepen via een HTTP POST-request.
-  - **Data forwarding:** De functie ontvangt de enquête data (in JSON-formaat), verwerkt deze en stuurt de data door naar een externe database (bijvoorbeeld Baserow).
-  - **Node.js en Dependencies:** De functie is geschreven in Node.js en maakt gebruik van de `node-fetch` module om externe API-aanroepen te doen.
+- **Serverless Functions op DigitalOcean:**
+  - **Data Verzenden:** Eén functie ontvangt de ingevulde enquêtegegevens en stuurt deze door naar de database.
+  - **Data Ophalen:** Een tweede functie haalt de opgeslagen data op uit de database en retourneert deze in JSON-formaat.
+  - **Node.js en Dependencies:** Beide functies zijn geschreven in Node.js. De functies maken gebruik van modules zoals `node-fetch` om externe API-aanroepen te doen.
+  - **Configuratie:** Belangrijke credentials (zoals het API-token voor Baserow) worden beheerd via omgevingsvariabelen.
 
-- **Integratie met externe API's:**
-  - **Baserow:** In de serverless functie wordt de ontvangen data doorgezet naar een Baserow API endpoint. Hiervoor dien je in je configuratie de juiste API-token en database-/tabel-ID’s op te geven.
-  - **Omgevingsvariabelen:** Belangrijke configuratiegegevens zoals het Baserow API-token worden via omgevingsvariabelen beheerd, zodat gevoelige data niet direct in de code staat.
+- **Integratie met Externe API's:**
+  - **Baserow of een Alternatieve Database:** De serverless functies verbinden met een database om de enquêtegegevens op te slaan en op te halen. Zorg ervoor dat je de juiste API-tokens en database-/tabel-ID's in je configuratie opneemt.
 
 ## Installatie en Configuratie
 
-1. **Clone de repository:**
+1. **Clone de repository.**
 
-   ```bash
-   git clone https://github.com/jouw-gebruikersnaam/ai-survey-app.git
-   cd ai-survey-app
-   ```
+2. **Gebruik je eigen middleware.**
 
-2. **Installeer afhankelijkheden (voor de serverless functie):**
+3. **Pas de API URLs aan in de Frontend Code:**
 
-   Ga naar de directory van de serverless functie (bijv. `verzendData`) en voer uit:
+   In je JavaScript-code vervang je de URL’s door de URL’s van je middleware (bijv. serverless function).
 
-   ```bash
-   npm install
-   ```
+## Gebruik
 
-3. **Configureer omgevingsvariabelen:**
+- **Invullen van de Enquête:**
+  - Open de applicatie in een moderne webbrowser.
+  - Vul het formulier in en klik op "Submit" om de data te versturen.
+  - De ingevulde data wordt zowel lokaal verwerkt (voor een visuele feedback) als doorgestuurd naar de database via de serverless functie.
 
-   Maak een `.env` bestand aan in de root of in de functie-directory met bijvoorbeeld:
-
-   ```dotenv
-   BASEROW_API_TOKEN=your_api_token_here
-   ```
-
-4. **Deploy de Serverless Function:**
-
-   Zorg dat je de DigitalOcean CLI (`doctl`) hebt geïnstalleerd en geconfigureerd. Deploy vervolgens de functie met:
-
-   ```bash
-   doctl serverless deploy .
-   ```
-
-5. **Pas de API URL aan in de frontend code:**
-
-   In de JavaScript-code van de frontend vervang je de placeholder URL door de URL die je van DigitalOcean hebt ontvangen.
+- **Resultaten Bekijken:**
+  - Na verzending of via een aparte interface kun je het overzicht van de resultaten zien.
+  - De applicatie haalt de opgeslagen data op en bouwt hiermee een overzicht waarin de resultaten zowel in grafieken als in tekst worden weergegeven.
 
 ## Contributie
 
@@ -80,7 +71,3 @@ Contributies zijn welkom! Als je ideeën hebt voor verbeteringen of nieuwe featu
 ## Licentie
 
 Deze repository is gelicenseerd onder de [MIT License](LICENSE).
-
----
-
-Deze README biedt een helder overzicht van de functionaliteit en de belangrijkste technische aspecten van de AI Survey App. Door deze opzet kunnen ontwikkelaars en gebruikers snel begrijpen hoe de applicatie werkt en hoe ze deze kunnen deployen en integreren.
