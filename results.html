@@ -11,6 +11,15 @@
 <div class="container mx-auto">
     <h1 class="text-3xl font-bold mb-4">Survey Dashboard</h1>
 
+    <!-- Date Filter -->
+    <div class="mb-6 p-4 bg-white rounded shadow">
+        <label for="dateFilter" class="font-semibold mr-2">Filter by date:</label>
+        <input type="date" id="dateFilter" class="border rounded px-3 py-2 mr-2">
+        <button id="filterBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Filter</button>
+        <button id="clearBtn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 ml-2">Show all</button>
+        <span id="responseCount" class="ml-4 text-gray-600"></span>
+    </div>
+
     <div id="dashboard" class="grid grid-cols-1 md:grid-cols-1 gap-4">
         <!-- Section headers and charts will be dynamically injected here -->
     </div>
@@ -198,9 +207,11 @@
         },
     ];
 
+    let allData = []; // Store all data for filtering
+
     // Load data from Baserow
     async function loadBaserowData() {
-    const functionUrl = 'https://faas-ams3-2a2df116.doserverless.co/api/v1/web/fn-de36936e-caf8-41eb-8caf-a697942675cd/default/ai-survey-results'; // Vervang dit door de URL van jouw serverless function
+    const functionUrl = 'https://faas-ams3-2a2df116.doserverless.co/api/v1/web/fn-de36936e-caf8-41eb-8caf-a697942675cd/default/ai-survey-results';
 
     try {
         const response = await axios.get(functionUrl);
@@ -209,13 +220,28 @@
             throw new Error(`Failed to fetch data from serverless function. Status: ${response.status}`);
         }
 
-        //Assuming that the function returns an object with a 'data' field containing the results:
-        return response.data.results; // or response.data as needed
+        return response.data.results;
 
     } catch (error) {
         console.error("Error loading data:", error);
-        return []; // Return an empty array or handle the error as needed
+        return [];
     }
+    }
+
+    // Filter data by date (compares YYYY-MM-DD)
+    function filterByDate(data, dateString) {
+        if (!dateString) return data;
+        return data.filter(row => {
+            // Baserow returns "Created on" field
+            const rowDate = row['Created on'] ? row['Created on'].substring(0, 10) : null;
+            return rowDate === dateString;
+        });
+    }
+
+    // Get today's date in YYYY-MM-DD format
+    function getTodayString() {
+        const today = new Date();
+        return today.toISOString().substring(0, 10);
     }
 
     // Render a chart for a single question
@@ -257,10 +283,17 @@
         });
     }
 
-    // Initialize dashboard
-    async function initDashboard() {
-        const data = await loadBaserowData();
+    // Render dashboard with given data
+    function renderDashboard(data) {
         const dashboard = document.getElementById("dashboard");
+        dashboard.innerHTML = ''; // Clear existing charts
+
+        document.getElementById("responseCount").textContent = `${data.length} respondent(s)`;
+
+        if (data.length === 0) {
+            dashboard.innerHTML = '<p class="text-gray-500 text-center py-8">No results found for this date.</p>';
+            return;
+        }
 
         surveyQuestions.forEach(({ section, questions }) => {
             const sectionContainer = document.createElement("div");
@@ -274,6 +307,44 @@
                 }
             });
         });
+    }
+
+    // Initialize dashboard
+    async function initDashboard() {
+        allData = await loadBaserowData();
+
+        // Check if Created on field is available
+        const hasCreatedOn = allData.length > 0 && allData[0]['Created on'];
+
+        const dateFilter = document.getElementById("dateFilter");
+        const filterBtn = document.getElementById("filterBtn");
+        const clearBtn = document.getElementById("clearBtn");
+
+        if (hasCreatedOn) {
+            // Set date picker to today
+            dateFilter.value = getTodayString();
+
+            // Initial render with today's data
+            const filteredData = filterByDate(allData, dateFilter.value);
+            renderDashboard(filteredData);
+
+            // Filter button click handler
+            filterBtn.addEventListener("click", () => {
+                const selectedDate = dateFilter.value;
+                const filteredData = filterByDate(allData, selectedDate);
+                renderDashboard(filteredData);
+            });
+
+            // Clear filter button
+            clearBtn.addEventListener("click", () => {
+                dateFilter.value = '';
+                renderDashboard(allData);
+            });
+        } else {
+            // Hide date filter if created_on is not available
+            dateFilter.parentElement.innerHTML = '<p class="text-orange-600">Date filter not available. Add "Created on" field to your Baserow table.</p>';
+            renderDashboard(allData);
+        }
     }
 
     initDashboard();
